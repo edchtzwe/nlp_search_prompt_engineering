@@ -1,0 +1,282 @@
+scalar JSON
+scalar Date
+
+enum VideoAction {
+  PLAYBACK
+
+  CLIP
+
+  COMPOSITE
+
+  MIXTURE
+}
+
+type SourceVideo {
+  id: ID!
+  original_name: String!
+  name: String
+  mime_type: String!
+  size: Float!
+  filename: String!
+  path: String!
+  duration: Float
+  created_at: Date!
+  updated_at: Date!
+}
+
+type CreateDrefMp4Response {
+  success: Boolean!
+  message: String!
+  uuid: String!
+  outputPath: String!
+  mediaServerUrl: String!
+  mdatLocation: String!
+  fileSize: String!
+  instructions: String!
+}
+
+type ErrorResponse {
+  error: String!
+  uuid: String
+}
+
+# Just a description of what it looks like
+type Mp4Node {
+  name: String!
+  size: String
+  attrs: JSON
+  children: [Mp4Node] # GQL is not recursive, so this won't work.
+}
+
+type Mp4DumpResponse {
+  success: Boolean!
+  filePath: String!
+  structure: JSON
+}
+
+type ReencodeMp4Response {
+  success: Boolean!
+  uuid: String!
+  message: String
+  error: String
+  meta: JSON
+}
+
+type SliceFmp4Response {
+  success: Boolean!
+  uuid: String!
+  initPath: String
+  fragmentsPath: String
+  error: String
+}
+
+type ClipResponse {
+  success: Boolean!
+  uuid: String
+  message: String
+  newDuration: Float
+  startTimeSeconds: Float
+  endTimeSeconds: Float
+  mediaServerUrl: String
+  mdatLocation: String
+}
+
+type VideoScene {
+  id: ID!
+  sourceVideoId: String!
+  startTime: Float!
+  endTime: Float!
+  content: String!
+  similarity: Float
+  sourceVideo: SourceVideo
+}
+
+input VideoSceneInput {
+  id: ID!
+  sourceVideoId: String!
+  startTime: Float!
+  endTime: Float!
+  content: String!
+  similarity: Float
+  sourceVideo: JSON
+}
+
+type VideoClip {
+  id: ID!
+  sourceVideoId: ID!
+  startTime: Float!
+  endTime: Float!
+  name: String
+  created_at: String!
+  updated_at: String!
+}
+
+type VideoComposite {
+  id: ID!
+  sourceVideoId: ID!
+  compositeVideoUuid: ID!
+  order: Int!
+  createdAt: String!
+  updatedAt: String!
+}
+
+input SeamstressClipInput {
+  video_id: String!
+  startTime: Float # Optional: defaults to 0
+  endTime: Float # Optional: defaults to end of file
+}
+
+type SeamstressResponse {
+  success: Boolean!
+  manifestUrl: String!
+  totalDuration: Float!
+  manifestPath: String!
+  uuid: String!
+}
+
+type RenameVideoClipResult {
+  success: Boolean!
+  clipId: ID!
+  name: String
+}
+
+type RenameVideoCompositeResult {
+  success: Boolean!
+  compositeId: ID!
+  name: String
+}
+
+type RenameVideoMixtureResponse {
+  success: Boolean!
+  mixtureId: String!
+  name: String!
+}
+
+type OrchestrationData {
+  originalPrompt: String!
+  reasoning: String # Added this
+  action: String!
+  searchPhrases: [String!]!
+  negativeConstraints: [String]!
+  successfulPhrase: String
+  foundScenes: [VideoScene!]
+}
+
+type OrchestrationResponse {
+  success: Boolean!
+  message: String!
+  data: OrchestrationData
+}
+
+input OrchestrationContextInput {
+  action: String!
+  uuid: String!
+}
+
+type VideoCompositeMetadata {
+  videoCompositeUuid: String!
+  name: String
+  createdAt: Date!
+  updatedAt: Date!
+}
+
+type VideoMixtureMetadata {
+  videoMixtureUuid: String!
+  name: String
+  createdAt: Date!
+  updatedAt: Date!
+}
+
+type RenameVideoMixtureResponse {
+  success: Boolean!
+  mixtureId: String!
+  name: String!
+}
+
+type RenameSourceVideoResponse {
+  success: Boolean!
+  id: ID!
+  name: String
+}
+
+type DeleteIsobmffByUUIDResponse {
+  success: Boolean!
+  message: String
+  uuid: String
+}
+
+type PurgeAssetsDatabaseResponse {
+  success: Boolean!
+  message: String
+}
+
+type PurgeIsobmffFilesResponse {
+  success: Boolean!
+  message: String
+}
+
+type PurgeSourceFilesResponse {
+  success: Boolean!
+  message: String
+}
+
+type IndexedFile {
+  filename: String!
+  filepath: String!
+  sizeMB: Float!
+  createdAt: Date!
+  modifiedAt: Date!
+}
+
+type Query {
+  health: String!
+  indexDirectory(url: String!): [IndexedFile!]!
+  createDrefMp4(uuid: String!): CreateDrefMp4Response!
+  mp4dump(uuid: String!): Mp4DumpResponse!
+  searchScenes(prompt: String!, videoUuid: String): [VideoScene!]!
+  getVideoClipsBySource(sourceUuid: ID!): [VideoClip!]!
+  getVideoComposites(compositeUuid: ID!): [VideoComposite!]!
+  getVideoCompositesBySource(sourceUuid: ID!): [VideoComposite!]!
+  findUnvirtualizedSourceVideos: [SourceVideo!]!
+  sourceVideoByUUID(uuid: String!): SourceVideo
+  sourceVideoByUUIDs(uuids: [String!]!): [SourceVideo!]!
+  sourceVideosByOriginalName(originalName: String!): [SourceVideo!]!
+  sourceVideosByOriginalNames(originalNames: [String!]!): [SourceVideo!]!
+  getSourceVideosCatalog: [SourceVideo!]!
+  getVideoClipsCatalog: [VideoClip!]!
+  getVideoCompositeCatalog: [VideoCompositeMetadata!]!
+  getVideoMixturesCatalog: [VideoMixtureMetadata!]!
+}
+
+type Mutation {
+  reencodeMp4(uuid: String!): ReencodeMp4Response!
+  sliceFmp4(uuid: String!): SliceFmp4Response!
+  createCompositeMp4(uuids: [String!]!): CreateDrefMp4Response!
+  createTimedCompositeMp4(clips: [SeamstressClipInput!]!): CreateDrefMp4Response!
+  createClippedMp4(
+    sourceUuid: String!
+    startTime: Float!
+    endTime: Float!
+  ): ClipResponse!
+  createSeamstress(clips: [SeamstressClipInput!]!): SeamstressResponse!
+  renameVideoClip(clipUuid: ID!, name: String!): RenameVideoClipResult!
+  renameVideoComposite(
+    compositeId: ID!
+    name: String!
+  ): RenameVideoCompositeResult!
+  renameVideoMixture(
+    mixtureId: String!
+    name: String!
+  ): RenameVideoMixtureResponse!
+  handleVideoOrchestration(
+    prompt: String!
+    context: OrchestrationContextInput
+  ): OrchestrationResponse!
+  judgeVideoScenes(prompt: String!, scenes: [VideoSceneInput!]!): [VideoScene!]!
+  renameSourceVideo(id: ID!, name: String!): RenameSourceVideoResponse!
+  deleteIsobmffByUUID(uuid: String!): DeleteIsobmffByUUIDResponse!
+  purgeAssetsDatabase: PurgeAssetsDatabaseResponse!
+  purgeIsobmffFiles: PurgeIsobmffFilesResponse!
+  purgeSourceFiles: PurgeSourceFilesResponse!
+  uploadFromUrl(url: String!): SourceVideo!
+}

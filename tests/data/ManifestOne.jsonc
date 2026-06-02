@@ -1,0 +1,36 @@
+{
+    // Source Video ID for the PlayStation Generations compilation
+    "source_video": "cff096e3-8101-4d03-9b78-d906f8f82aa4",
+    "scenes": [
+        {
+            // PlayStation 1 (PS1)
+            "startTime": 4,
+            "endTime": 19,
+            "scene": "Original PlayStation 1 startup sequence showing the white Sony Computer Entertainment screen followed by the iconic PS symbol with the orange diamond graphic and deep synthesizer boot sound."
+        },
+        {
+            // PlayStation 2 (PS2)
+            "startTime": 49,
+            "endTime": 67,
+            "scene": "PlayStation 2 boot screen featuring the classic blue abstract towers, floating cubes, and fog effects with the ethereal wind chime sound and Sony Computer Entertainment text."
+        },
+        {
+            // PlayStation Portable (PSP)
+            "startTime": 140,
+            "endTime": 150,
+            "scene": "PlayStation Portable PSP handheld console startup animation displaying the Sony logo on a white background followed by the abstract ribbon wave design."
+        },
+        {
+            // PlayStation Vita (PS Vita)
+            "startTime": 194,
+            "endTime": 209,
+            "scene": "PlayStation Vita PS Vita startup sequence showing the logo and the spherical bubble user interface with the distinct startup chime."
+        },
+        {
+            // PlayStation 5 (PS5)
+            "startTime": 267,
+            "endTime": 278,
+            "scene": "PlayStation 5 PS5 next-gen console boot up animation featuring golden dust particle effects, high contrast HDR lighting, and the PS logo appearing from the darkness."
+        }
+    ]
+}

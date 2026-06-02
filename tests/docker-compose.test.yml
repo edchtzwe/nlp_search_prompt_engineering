@@ -1,0 +1,38 @@
+services:
+  discovery_engine_be:
+    build:
+      context: ..
+    container_name: discovery-engine-be
+    volumes:
+      - ../:/app
+    env_file:
+      - ../.env
+    depends_on:
+      discovery_engine_db:
+        condition: service_healthy
+    stdin_open: true
+    tty: true
+    networks:
+      devnet:
+        ipv4_address: 192.168.161.11
+
+  discovery_engine_db:
+    image: pgvector/pgvector:pg16
+    container_name: discovery-engine-db
+    env_file:
+      - ../.env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      devnet:
+        ipv4_address: 192.168.161.12
+
+networks:
+  devnet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.161.0/24
