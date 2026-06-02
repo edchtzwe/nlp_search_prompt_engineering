@@ -1,0 +1,55 @@
+FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y \
+    curl \
+    ca-certificates \
+    git \
+    build-essential \
+    pkg-config \
+    g++ \
+    nano \
+    tree \
+    procps \
+    ffmpeg \
+    cmake \
+    wget \
+    unzip \
+    mediainfo \
+    zlib1g-dev \
+    bash-completion \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs
+
+RUN echo "alias ll='ls -lahS'" >> /etc/bash.bashrc
+
+RUN cd /tmp && \
+    curl -kL https://www.bok.net/Bento4/binaries/Bento4-SDK-1-6-0-641.x86_64-unknown-linux.zip -o bento4.zip && \
+    unzip -j bento4.zip 'Bento4-SDK-1-6-0-641.x86_64-unknown-linux/bin/*' -d /usr/local/bin/ && \
+    chmod +x /usr/local/bin/mp4* && \
+    rm -f bento4.zip
+
+# CHANGED: Manual build of GPAC (includes mp4box)
+RUN git clone https://github.com/gpac/gpac.git /tmp/gpac && \
+    cd /tmp/gpac && \
+    ./configure --static-mp4box --use-zlib=no && \
+    make -j$(nproc) && \
+    make install && \
+    rm -rf /tmp/gpac
+
+WORKDIR /app
+
+# Copy package files first to leverage Docker cache
+COPY package.json package-lock.json ./
+
+# Install dependencies (including devDependencies for build)
+RUN npm ci
+
+# Copy the rest of the application code
+COPY . .
+
+EXPOSE 3000
+
+# Start the application
+CMD ["tail", "-f", "/dev/null"]
