@@ -1,117 +1,44 @@
-name: ION Video API PR Trigger
+name: NLP Search & Prompt Engineering PR Trigger
 on:
   pull_request:
     types: [opened, reopened, synchronize]
 
 jobs:
-  setup-and-test:
+  sandbox-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          path: ./app # Clone into /app
+          path: ./app
 
-      - name: Install tree
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y tree
-
-      - name: Show repository structure
-        run: |
-          cd ./app
-          tree -L 2
-
-      - name: Check if Docker is installed
-        id: check-docker
-        run: |
-          if docker --version; then
-            echo "Docker is already installed."
-            echo "docker_installed=true" >> $GITHUB_OUTPUT
-          else
-            echo "Docker is not installed."
-            echo "docker_installed=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Install Docker if not present
-        if: steps.check-docker.outputs.docker_installed == 'false'
-        run: |
-          sudo apt-get update
-          curl -fsSL https://get.docker.com -o get-docker.sh
-          sudo sh get-docker.sh
-          docker --version
-
-      - name: Check if Docker Compose is installed
-        id: check-compose
-        run: |
-          if docker compose version; then
-            echo "Docker Compose is already installed."
-            echo "compose_installed=true" >> $GITHUB_OUTPUT
-          else
-            echo "Docker Compose is not installed."
-            echo "compose_installed=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Install Docker Compose if not present
-        if: steps.check-compose.outputs.compose_installed == 'false'
-        run: |
-          sudo apt-get install -y docker-compose-plugin
-          docker compose version
-
-      - name: Set up Docker group
-        run: |
-          sudo usermod -aG docker $USER
-          newgrp docker <<EOF
-          docker --version
-          EOF
-
-      - name: Copy .env.clean to .env
+      - name: Prepare Environment File
         run: |
           cp ./app/.env.clean ./app/.env
 
-      - name: Run Migration via Compose
+      - name: Spin up Docker Sandbox Environment
         run: |
           cd ./app/tests
           docker compose -f docker-compose.test.yml up -d --build
-          sleep 10  # Wait for containers
+          sleep 5
 
-          # Use bash -l -c to load NVM environment
-          docker compose -f docker-compose.test.yml exec -T discovery_engine_be bash -l -c "npm install"
+      - name: Install Dependencies in Container
+        run: |
+          cd ./app/tests
+          docker compose -f docker-compose.test.yml exec -T discovery_engine_be bash -l -c "npm ci"
+
+      - name: Run Database Migrations in Container
+        run: |
+          cd ./app/tests
           docker compose -f docker-compose.test.yml exec -T discovery_engine_be bash -l -c "npm run migrate:up"
 
-          docker compose -f docker-compose.test.yml logs --no-color discovery_engine_be
-          if docker compose -f docker-compose.test.yml logs discovery_engine_be | grep -qse "error"; then
-            echo "Migration failed!"
-            exit 1
-          fi
-
-      - name: Start Server (Background)
+      - name: Run Unit and Localized Tests in Container
         run: |
           cd ./app/tests
-          # Start npm run dev in background, redirect logs to server.log inside container
-          docker compose -f docker-compose.test.yml exec -T discovery_engine_be bash -l -c "nohup npm run dev > server.log 2>&1 &"
+          docker compose -f docker-compose.test.yml exec -T discovery_engine_be bash -l -c "npm test -- tests/services tests/graphql/nlp.test.ts"
 
-      - name: Wait for Server
-        run: sleep 10
-
-      - name: Lint
+      - name: Tear down Sandbox Environment
+        if: always()
         run: |
           cd ./app/tests
-          docker compose -f docker-compose.test.yml exec -T discovery_engine_be bash -l -c "npm run lint"
-
-      - name: Build
-        run: |
-          cd ./app/tests
-          docker compose -f docker-compose.test.yml exec -T discovery_engine_be bash -l -c "npm run build"
-
-      - name: Run Tests
-        run: |
-          cd ./app/tests
-          docker compose -f docker-compose.test.yml exec -T discovery_engine_be bash -l -c "npm run test"
-
-      - name: Debug Server Logs (If Failure)
-        if: failure()
-        run: |
-          cd ./app/tests
-          echo "=== SERVER LOGS ==="
-          docker compose -f docker-compose.test.yml exec -T discovery_engine_be cat server.log
+          docker compose -f docker-compose.test.yml down -v
