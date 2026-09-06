@@ -5,6 +5,8 @@ import { getVideoCompositesByCompositeUuid } from '@/models/video_composites.ts'
 import { getVideoClip } from '@/models/video_clips.ts';
 import { getVideoMixtureSources } from '@/models/video_mixtures.ts';
 import { PromptLoader } from '@/services/PromptLoader.ts';
+import { ToolCallingService } from '@/services/ToolCallingService.ts';
+import type { ToolCallDecision } from '@/types/tools.ts';
 
 export interface JudgeResponseJson {
     reasoning: string;
@@ -37,6 +39,7 @@ export interface OrchestrationResult {
         searchPhrases: string[];
         successfulPhrase: string;
         foundScenes: { id: string; [key: string]: unknown }[];
+        toolDecision?: ToolCallDecision;
     };
 }
 
@@ -193,13 +196,23 @@ User Request: "${prompt}"
             }
         }
 
+        let toolDecision: ToolCallDecision | undefined;
+        if (foundScenes.length > 0) {
+            try {
+                toolDecision = await ToolCallingService.decideVideoTool(prompt, foundScenes);
+            } catch (error) {
+                console.warn('Tool calling step skipped or encountered error:', error);
+            }
+        }
+
         const resultData = {
             originalPrompt: intent?.originalPrompt ?? prompt,
             reasoning: intent?.reasoning ?? '',
             action: intent?.action ?? 'PLAYBACK',
             searchPhrases,
             successfulPhrase,
-            foundScenes
+            foundScenes,
+            toolDecision
         };
 
         return {
