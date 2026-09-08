@@ -14,13 +14,11 @@ export const up = (pgm) => {
         { schema: 'discovery_showcase', name: 'video_clips' },
         {
             id: {
-                // CHANGE: primary key for video_clips
                 type: 'uuid',
                 primaryKey: true,
                 default: pgm.func('gen_random_uuid()'),
             },
             source_video_id: {
-                // CHANGE: non-unique but mandatory foreign key
                 type: 'uuid',
                 notNull: true,
                 references: {
@@ -30,12 +28,10 @@ export const up = (pgm) => {
                 onDelete: 'CASCADE',
             },
             start_time: {
-                // CHANGE: clip start time (required)
                 type: 'double precision',
                 notNull: true,
             },
             end_time: {
-                // CHANGE: clip end time (required)
                 type: 'double precision',
                 notNull: true,
             },

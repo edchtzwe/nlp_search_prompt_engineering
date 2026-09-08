@@ -13,7 +13,6 @@ export const up = (pgm) => {
         { schema: 'discovery_showcase', name: 'video_clips' },
         {
             name: {
-                // CHANGE: Add nullable name column
                 type: 'text',
                 notNull: false,
             },
@@ -58,7 +57,6 @@ export const down = (pgm) => {
     );
 
     pgm.dropColumn(
-        { schema: 'discovery_showcase', name: 'video_clips' },
+        { schema: 'discovery_showcase', name: 'video_scenes' },
         'name'
     );
-};

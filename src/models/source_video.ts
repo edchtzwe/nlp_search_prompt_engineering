@@ -32,7 +32,6 @@ export const createSourceVideo = async (
     [videoId, file.originalName, file.mimeType, file.size, file.filename, file.path, duration]
   );
 
-  // CHANGE: Extract first element from array
   return result.rows[0];
 };
 
@@ -44,7 +43,6 @@ export const getSourceVideo = async (
     [id]
   );
 
-  // CHANGE: Extract first element or return undefined
   return result.rows[0];
 };
 
@@ -96,7 +94,6 @@ export const getSourceVideoByFilename = async (
     [filename]
   );
 
-  // CHANGE: Extract first element or return undefined
   return result.rows[0];
 };
 
@@ -105,7 +102,6 @@ export const getAllSourceVideos = async (): Promise<SourceVideo[]> => {
     'SELECT * FROM discovery_showcase.source_video ORDER BY created_at DESC'
   );
 
-  // CHANGE: Return entire array for multiple results
   return result.rows;
 };
 

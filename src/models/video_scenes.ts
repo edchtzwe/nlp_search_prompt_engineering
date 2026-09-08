@@ -10,7 +10,6 @@ export interface VideoScene {
     start_time: number;
     end_time: number;
     content: string;
-    // CHANGE: Added name field
     name?: string;
     embedding: string; // pgvector returns this as a string representation
     ai_provider: string;
@@ -26,7 +25,6 @@ export interface CreateVideoSceneParams {
     start_time: number;
     end_time: number;
     content: string;
-    // CHANGE: Added optional name field
     name?: string;
     embedding: string; // JSON string format '[0.1, 0.2, ...]'
     ai_provider: string;
@@ -41,7 +39,6 @@ export const createVideoScene = async (
     params: CreateVideoSceneParams,
     client: Pool | PoolClient = pool
 ): Promise<VideoScene> => {
-    // CHANGE: Added name to INSERT statement
     const result = await client.query<VideoScene>(
         `INSERT INTO discovery_showcase.video_scenes 
      (source_video_id, start_time, end_time, content, embedding, ai_provider, ai_model, name) 

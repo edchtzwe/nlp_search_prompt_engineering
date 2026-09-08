@@ -41,7 +41,6 @@ RUN cd /tmp && \
     chmod +x /usr/local/bin/mp4* && \
     rm -f bento4.zip
 
-# CHANGED: Manual build of GPAC (includes mp4box)
 RUN git clone https://github.com/gpac/gpac.git /tmp/gpac && \
     cd /tmp/gpac && \
     ./configure --static-mp4box --use-zlib=no && \

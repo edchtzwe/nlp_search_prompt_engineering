@@ -20,10 +20,8 @@ const corsOptions = {
   optionsSuccessStatus: 200
 };
 
-// CHANGE: CORS first
 app.use(cors(corsOptions));
 
-// CHANGE: Removed CSP middleware entirely
 app.use((req, res, next) => {
   if (req.path.endsWith('.m3u8')) {
     res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
