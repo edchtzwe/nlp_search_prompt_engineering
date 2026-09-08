@@ -4,24 +4,20 @@ import { v4 as uuidv4 } from 'uuid';
 const { DB_SCHEMA } = process.env;
 
 if (!DB_SCHEMA) {
-    // CHANGE: Refactor to require schema from .env (process.env.DB_SCHEMA)
     throw new Error('Missing env var: DB_SCHEMA');
 }
 
-// CHANGE: Centralised table reference using DB_SCHEMA
 const VIDEO_CLIPS_TABLE = `${DB_SCHEMA}.video_clips`;
 
 interface VideoClipCreateData {
     sourceVideoId: string;
     startTime: number;
     endTime: number;
-    // CHANGE: Added optional name field
     name?: string;
 }
 
 export interface VideoClip extends VideoClipCreateData {
     id: string;
-    // CHANGE: Reflects DB nullable state
     name?: string;
     created_at: Date;
     updated_at: Date;
@@ -34,7 +30,6 @@ export const createVideoClip = async (
     const clipId = id || uuidv4();
 
     const result = await pool.query<VideoClip>(
-        // CHANGE: Use schema from env
         `INSERT INTO ${VIDEO_CLIPS_TABLE}
          (id, source_video_id, start_time, end_time, name)
          VALUES ($1, $2, $3, $4, $5)
@@ -49,7 +44,6 @@ export const getVideoClipsBySourceVideo = async (
     sourceVideoId: string
 ): Promise<VideoClip[]> => {
     const result = await pool.query<VideoClip>(
-        // CHANGE: Use schema from env
         `SELECT
             id,
             source_video_id AS "sourceVideoId",

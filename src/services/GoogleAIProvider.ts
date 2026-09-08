@@ -34,10 +34,6 @@ export const createGoogleAIProvider = (apiKey: string): AIProvider => {
                     model: EMBEDDING_MODEL,
                 });
 
-                // CHANGED: cast to any to bypass
-                // missing type for outputDimensionality
-                // — the API accepts it even if the
-                // SDK types lag behind
                 const result = await model.embedContent({
                     content: {
                         parts: [{ text }],

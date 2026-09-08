@@ -1,12 +1,14 @@
 {
-  "name": "app",
+  "name": "nlp-video-search-prototype",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "Natural-language video search and orchestration prototype using LLMs and vector embeddings.",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc && vite build",
+    "typecheck": "tsc --noEmit",
     "preview": "vite preview",
     "start": "node dist/index.js",
     "migrate:create": "node-pg-migrate create --sql -- migration",
