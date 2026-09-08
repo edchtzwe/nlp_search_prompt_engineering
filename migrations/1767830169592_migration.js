@@ -60,3 +60,4 @@ export const down = (pgm) => {
         { schema: 'discovery_showcase', name: 'video_scenes' },
         'name'
     );
+};
